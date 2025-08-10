@@ -31,14 +31,18 @@ app = FastAPI(
 )
 
 # --- 2. Middleware ---
-# Allows your frontend (at localhost:3000) to communicate with this backend
+# Allows your Vercel frontend and local dev frontend to communicate with this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",  # local dev
+        "https://your-vercel-app.vercel.app"  # deployed frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # --- 3. Service Clients ---
 # Initialize Supabase client for database operations
