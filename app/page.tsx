@@ -27,6 +27,13 @@ const staggerContainer = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Debug section - remove after fixing */}
+      <div className="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg border z-50">
+        <p className="text-sm font-mono">
+          Backend URL: {process.env.NEXT_PUBLIC_BACKEND_URL || 'NOT SET'}
+        </p>
+      </div>
+      
       <ParticleBackground />
 
       {/* Navigation */}

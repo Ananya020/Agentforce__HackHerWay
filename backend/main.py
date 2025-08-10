@@ -36,7 +36,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # local dev
-        "https://your-vercel-app.vercel.app"  # deployed frontend
+        "https://perzon-ai.vercel.app",  # your actual Vercel deployment
+        "https://perzon-ai.vercel.app/",  # with trailing slash
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -126,9 +127,23 @@ async def root():
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
+        print(f"Upload request received for file: {file.filename}")
+        print(f"Content type: {file.content_type}")
+        print(f"File size: {file.size if hasattr(file, 'size') else 'Unknown'}")
+        
         content = await file.read()
-        return {"success": True, "content": content.decode('utf-8')}
+        print(f"File content length: {len(content)} bytes")
+        
+        # Try to decode as UTF-8, fallback to other encodings if needed
+        try:
+            decoded_content = content.decode('utf-8')
+        except UnicodeDecodeError:
+            decoded_content = content.decode('latin-1')
+        
+        print(f"Successfully processed file upload")
+        return {"success": True, "content": decoded_content}
     except Exception as e:
+        print(f"Error during file upload: {str(e)}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error during file upload: {e}")
 
