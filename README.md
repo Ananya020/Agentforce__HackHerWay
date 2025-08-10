@@ -1,16 +1,18 @@
-# PerzonAI Backend API
+# PerzonAI – AI Marketing Persona Agent
 
-A production-ready backend API for PerzonAI - AI Marketing Persona Agent. Built with Node.js, Express, and TypeScript, designed for agentic AI workflows.
+A full-stack, production-ready web application that empowers marketers and product managers to create, refine, and interact with dynamic, AI-powered customer personas.
+Built with Next.js + TypeScript (frontend) and Node.js + Express + TypeScript (backend) for a smooth, decoupled architecture, with Google Gemini API powering persona generation, refinement, and conversational AI.
 
 ## 🚀 Features
 
-- **AI Persona Generation** - Generate detailed customer personas using Google Gemini API
-- **Interactive Chat** - Chat with personas in their unique voice and style
-- **File Processing** - Upload and process CSV, JSON, TXT files for persona generation
-- **Real-time Refinement** - Instantly refine personas with updated parameters
-- **Export & Share** - Export personas as PDF/JSON/Text and create shareable links
-- **Trends Analysis** - Fetch and serve marketing trends data
-- **Production Ready** - Comprehensive logging, error handling, validation, and documentation
+- **AI Persona Generation** – Generate detailed, structured personas from product briefs or uploaded data.
+- **Interactive Chat** – Talk to personas in their unique voice and style.
+- **Real-Time Refinement** – Update persona traits instantly with live feedback.
+- **File Processing** – Upload CSV, JSON, or TXT files for persona generation.
+- **Avatar Generation** – Auto-generate unique avatars using DiceBear API.
+- **Export & Share** – Export personas as PDF, JSON, or Text; generate shareable links.
+- **Trends Analysis** – View marketing trends data directly in the dashboard.
+- **Production-Ready** – Includes logging, validation, error handling, Docker deployment.
 
 ## 🏗️ Architecture
 
@@ -24,72 +26,70 @@ src/
 ├── types/           # TypeScript definitions
 └── tests/           # Test files
 ```
+```
+[User Browser]
+    ↓ (HTTP/HTTPS)
+[Next.js Frontend]
+    ↓ API Calls
+[Node.js/Express Backend] --- [Google Gemini API] (AI)
+        ↓
+    [Supabase PostgreSQL]
+        ↑
+   [DiceBear API] (Avatars)
+
+```
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Node.js + Express + TypeScript
-- **AI Integration**: Google Gemini API
-- **File Processing**: Multer + CSV Parser
-- **PDF Generation**: PDFKit
-- **Validation**: Joi
-- **Logging**: Winston
-- **Documentation**: Swagger/OpenAPI
-- **Testing**: Jest
-- **Containerization**: Docker
+Frontend: *Next.js 14+, TypeScript, Tailwind CSS, Shadcn/UI, Framer Motion, Lucide Icons*
+Backend: *Node.js, Express, TypeScript, Multer, Joi, Winston, PDFKit, Swagger/OpenAPI*
+Database: *Supabase (PostgreSQL with JSONB support)*
+AI Services: *Google Gemini API, DiceBear API*
+DevOps: *Docker, PM2, GitHub Actions (optional CI/CD)*
 
 ## 📋 Prerequisites
 
-- Node.js 18+
-- npm or yarn
-- Google Gemini API key
+-Node.js 18+
+-npm or yarn
+-Supabase account & API keys
+-Google Gemini API key
+-Docker (optional, for containerized deployment)
 
 ## 🚀 Quick Start
 
-### 1. Clone and Install
-
+1️⃣ Clone Repository
 ```
 git clone <repository-url>
-cd perzonai-backend
+cd perzonai
+```
+2️⃣ Install Dependencies
+```
 npm install
 ```
-
-### 2. Environment Setup
-
-Create `.env` file:
-
+3️⃣ Environment Variables
+Create .env in project root:
 ```
+# Server
 PORT=8000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
-GEMINI_API_KEY=your_gemini_api_key_here
+
+# AI & DB
+GEMINI_API_KEY=your_gemini_api_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+
+# Logging
 LOG_LEVEL=info
 ```
-
-### 3. Development
-
+4️⃣ Development Mode
 ```
-# Start development server
 npm run dev
-
-# Build for production
+```
+5️⃣ Build & Production
+```
 npm run build
-
-# Start production server
 npm start
-
-# Run tests
-npm test
-```
-
-### 4. Docker Deployment
-
-```
-# Build and run with Docker Compose
-docker-compose up --build
-
-# Or build individual container
-docker build -t perzonai-backend .
-docker run -p 8000:8000 --env-file .env perzonai-backend
 ```
 
 ## 📚 API Documentation
@@ -230,6 +230,34 @@ const chatResponse = await fetch('http://localhost:8000/api/personas/chat', {
   body: JSON.stringify({ personaId, message }),
 });
 ```
+### 📖 Usage Guide
+**1. Generating Personas**
+Open the frontend in your browser (http://localhost:3000). <br>
+Go to the Persona Generator page. <br>
+Enter product details or upload a CSV/JSON/TXT file.  <br>
+Click Generate – the request is sent to /api/personas/generate on the backend. <br>
+Google Gemini API generates the persona data, avatars are added via DiceBear, and the results are displayed instantly. <br>
+
+**2. Refining Personas**
+On the Dashboard, adjust persona sliders, traits, or preferences. <br>
+Click Apply Changes – the frontend calls /api/personas/refine with current personas + instructions. <br>
+Backend sends instructions to Gemini, returns updated personas to the frontend in real time. <br>
+
+**3. Chatting with Personas**
+Click the Chat button on any persona card. <br>
+Type a message – the frontend calls /api/personas/chat with persona context + user message. <br>
+Backend sends a role-playing prompt to Gemini and returns the persona's reply. <br>
+
+**4. Exporting & Sharing**
+Export personas as PDF, JSON, or Text via backend export endpoints. <br>
+Create shareable links using /api/personas/share. <br>
+
+**5. Trends & Insights**
+Fetch marketing trends with /api/trends for inspiration or targeting suggestions. <br>
+
+**6. File Uploads**
+Upload CSV, JSON, or TXT files directly to /api/upload. <br>
+Backend parses the data and feeds it into the persona generation process.<br>
 
 ## 🤝 Contributing
 
