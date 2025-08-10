@@ -27,51 +27,55 @@ export default function DashboardPage() {
     }
   }, [])
 
-  const handleRefinePersonas = async (refinements: any) => {
-    setIsRefining(true)
+  // The CORRECTED `handleRefinePersonas` function with a debugging line
 
-    try {
-      const originalContext = {
-        product_positioning: "Sample positioning", // This would come from stored data
-        industry: "technology",
-        target_region: "north-america",
-        product_category: "saas",
-      }
+const handleRefinePersonas = async (refinements: any) => {
+  setIsRefining(true);
+  try {
+    const response = await fetch("http://localhost:8000/api/personas/refine", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        personas,
+        refinements,
+        original_context: {},
+      }),
+    });
 
-      const response = await fetch("http://localhost:8000/api/personas/refine", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          personas,
-          refinements,
-          original_context: originalContext,
-        }),
-      })
+    const result = await response.json();
 
-      const result = await response.json()
+    // ======================= THE DEBUGGING LINE =======================
+    // This will show us exactly what the backend sent back.
+    console.log("Response from /refine endpoint:", result);
+    // ==================================================================
 
-      if (result.success) {
-        setPersonas(result.personas)
-        localStorage.setItem("generatedPersonas", JSON.stringify(result.personas))
-        toast({
-          title: "Personas refined successfully!",
-          description: "Your personas have been updated with the new parameters.",
-        })
-      } else {
-        throw new Error(result.error || "Refinement failed")
-      }
-    } catch (error) {
+    if (result.success && result.personas) {
+      // These lines update the UI. They will only run if the `result`
+      // object has `success: true` and a `personas` array.
+      setPersonas(result.personas);
+      localStorage.setItem("generatedPersonas", JSON.stringify(result.personas));
+      
       toast({
-        title: "Refinement failed",
-        description: error instanceof Error ? error.message : "Failed to refine personas",
-        variant: "destructive",
-      })
-    } finally {
-      setIsRefining(false)
+        title: "Personas refined successfully!",
+        description: "Your personas have been updated with the new parameters.",
+      });
+    } else {
+      // If the UI doesn't update, it means the code is coming here instead.
+      console.error("Refinement failed or response was malformed. Result:", result);
+      throw new Error(result.error || "Refinement failed: `result.success` was false or `result.personas` was missing.");
     }
+  } catch (error) {
+    toast({
+      title: "Refinement failed",
+      description: error instanceof Error ? error.message : "Failed to refine personas",
+      variant: "destructive",
+    });
+  } finally {
+    setIsRefining(false);
   }
+};
 
   const handleExport = async (format: "json" | "csv") => {
     try {

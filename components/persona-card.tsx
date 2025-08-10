@@ -1,119 +1,82 @@
-"use client"
+// FILE: components/persona-card.tsx
+// This is the final, fully reactive version.
 
-import { motion } from "framer-motion"
-import { MessageCircle, MapPin, Briefcase, Target, Lightbulb } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+"use client";
+
+import { memo } from 'react';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "./ui/button";
+import { MessageSquare } from "lucide-react";
+
+// Define the shape of a persona for type safety
+interface Persona {
+  id: string;
+  name: string;
+  avatar?: string;
+  demographics?: { age?: number; occupation?: string };
+  traits?: string[];
+  pain_points?: string[];
+  goals?: string[];
+  [key: string]: any;
+}
 
 interface PersonaCardProps {
-  persona: {
-    id: number
-    name: string
-    avatar: string
-    demographics: {
-      age: number
-      gender: string
-      location: string
-      occupation: string
-    }
-    traits: string[]
-    painPoints: string[]
-    messagingTone: string
-    campaigns: string[]
-  }
-  index: number
-  onClick: () => void
+  persona: Persona;
+  onClick: () => void; // This is called when the user clicks the chat button
 }
 
-export function PersonaCard({ persona, index, onClick }: PersonaCardProps) {
+// Using React.memo tells this component to only re-render if its props have truly changed.
+export const PersonaCard = memo(function PersonaCard({ persona, onClick }: PersonaCardProps) {
+  // Defensive check in case persona data is ever missing
+  if (!persona) return null;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      whileHover={{ y: -8, scale: 1.02 }}
-      className="cursor-pointer"
-      onClick={onClick}
-    >
-      <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border-0">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={persona.avatar || "/placeholder.svg"} />
-              <AvatarFallback>
-                {persona.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-1">{persona.name}</h3>
-              <div className="flex items-center text-gray-600 text-sm space-x-4">
-                <span className="flex items-center">
-                  <Briefcase className="w-4 h-4 mr-1" />
-                  {persona.demographics.occupation}
-                </span>
-                <span className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {persona.demographics.location}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Chat
-          </Button>
+    <Card className="flex flex-col h-full bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="flex flex-row items-center gap-4">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={persona.avatar} alt={persona.name} />
+          <AvatarFallback>{persona.name?.charAt(0) || 'P'}</AvatarFallback>
+        </Avatar>
+        <div>
+          <CardTitle className="text-xl font-bold text-gray-800">{persona.name || "Unnamed Persona"}</CardTitle>
+          <p className="text-sm text-gray-500">
+            {persona.demographics?.age}{persona.demographics?.occupation && `, ${persona.demographics.occupation}`}
+          </p>
         </div>
+      </CardHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-              <Target className="w-4 h-4 mr-2 text-pink-500" />
-              Key Traits
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {persona.traits.map((trait, i) => (
-                <Badge key={i} variant="secondary" className="bg-pink-100 text-pink-700">
-                  {trait}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-              <Lightbulb className="w-4 h-4 mr-2 text-purple-500" />
-              Pain Points
-            </h4>
-            <ul className="space-y-1">
-              {persona.painPoints.slice(0, 2).map((point, i) => (
-                <li key={i} className="text-sm text-gray-600 flex items-start">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 mr-2 flex-shrink-0"></div>
-                  {point}
-                </li>
-              ))}
-            </ul>
+      <CardContent className="space-y-4 text-sm flex-grow">
+        {/* Traits Section */}
+        <div>
+          <h4 className="font-semibold mb-2 text-gray-700">Traits</h4>
+          <div className="flex flex-wrap gap-2">
+            {(persona.traits ?? []).map((trait, i) => (
+              <Badge key={i} variant="secondary" className="bg-pink-100 text-pink-800">
+                {trait}
+              </Badge>
+            ))}
           </div>
         </div>
-
-        <div className="mt-6 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium text-gray-700">Messaging Tone:</span>
-              <span className="text-sm text-gray-600 ml-2">{persona.messagingTone}</span>
-            </div>
-            <motion.div whileHover={{ scale: 1.1 }} className="w-3 h-3 bg-green-400 rounded-full"></motion.div>
-          </div>
+        {/* Goals Section */}
+        <div>
+          <h4 className="font-semibold mb-2 text-gray-700">Goals</h4>
+          <ul className="list-disc list-inside space-y-1 text-gray-600">
+            {(persona.goals ?? []).map((goal, i) => (
+              <li key={i}>{goal}</li>
+            ))}
+          </ul>
         </div>
-      </Card>
-    </motion.div>
-  )
-}
+      </CardContent>
+
+      {/* Action Button to open chat */}
+      <div className="p-4 pt-0 mt-auto">
+         <Button onClick={onClick} variant="outline" className="w-full">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Chat with {persona.name}
+        </Button>
+      </div>
+    </Card>
+  );
+});

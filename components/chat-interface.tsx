@@ -1,234 +1,61 @@
+// FILE: components/chat-interface.tsx
 "use client"
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { SendHorizonal, X } from "lucide-react";
 
-import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { X, Send } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useToast } from "@/hooks/use-toast"
-
-interface Message {
-  id: number
-  text: string
-  sender: "user" | "persona"
-  timestamp: Date
-}
-
-interface ChatInterfaceProps {
-  persona: any
-  onClose: () => void
-}
+interface Message { role: 'user' | 'assistant'; content: string; }
+interface Persona { id: string; name: string; avatar?: string; [key: string]: any; }
+interface ChatInterfaceProps { persona: Persona; onClose: () => void; }
 
 export function ChatInterface({ persona, onClose }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { toast } = useToast()
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [userInput, setUserInput] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    useEffect(() => {
+        scrollAreaRef.current?.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    }, [messages]);
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  useEffect(() => {
-    // Initial greeting
-    const greeting = `Hi! I'm ${persona.name}. ${persona.quotes?.[0] || "What would you like to know about me?"}`
-
-    setTimeout(() => {
-      setMessages([
-        {
-          id: 1,
-          text: greeting,
-          sender: "persona",
-          timestamp: new Date(),
-        },
-      ])
-    }, 500)
-  }, [persona])
-
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
-
-    const userMessage: Message = {
-      id: Date.now(),
-      text: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
-    const currentInput = inputValue
-    setInputValue("")
-    setIsTyping(true)
-
-    try {
-      const response = await fetch("http://localhost:8000/api/personas/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          persona_id: persona.id,
-          message: currentInput,
-          conversation_history: messages.map((msg) => ({
-            role: msg.sender === "user" ? "user" : "assistant",
-            content: msg.text,
-          })),
-          persona_context: persona,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        const personaMessage: Message = {
-          id: Date.now() + 1,
-          text: result.response,
-          sender: "persona",
-          timestamp: new Date(),
+    const handleSend = async () => {
+        if (!userInput.trim()) return;
+        const newMessages: Message[] = [...messages, { role: 'user', content: userInput }];
+        setMessages(newMessages);
+        const messageToSend = userInput;
+        setUserInput("");
+        setIsLoading(true);
+        try {
+            const response = await fetch("http://localhost:8000/api/personas/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ persona, message: messageToSend }),
+            });
+            if (!response.ok) throw new Error("API Error");
+            const result = await response.json();
+            setMessages(current => [...current, { role: 'assistant', content: result.reply }]);
+        } catch (error) {
+            setMessages(current => [...current, { role: 'assistant', content: "Sorry, I had an issue responding." }]);
+        } finally {
+            setIsLoading(false);
         }
+    };
 
-        setMessages((prev) => [...prev, personaMessage])
-      } else {
-        throw new Error(result.error || "Failed to get response")
-      }
-    } catch (error) {
-      toast({
-        title: "Chat error",
-        description: error instanceof Error ? error.message : "Failed to send message",
-        variant: "destructive",
-      })
-    } finally {
-      setIsTyping(false)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-        className="w-full max-w-2xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-pink-50 to-purple-50">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={persona.avatar || "/placeholder.svg"} />
-              <AvatarFallback>
-                {persona.name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-semibold text-gray-800">{persona.name}</h3>
-              <p className="text-sm text-gray-600 flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                Online • {persona.demographics?.occupation}
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* Messages */}
-        <ScrollArea className="flex-1 p-6 h-[400px]">
-          <div className="space-y-4">
-            <AnimatePresence>
-              {messages.map((message) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                      message.sender === "user"
-                        ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-tr-md"
-                        : "bg-gray-100 text-gray-800 rounded-tl-md"
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {isTyping && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-                <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.1s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
-                    </div>
-                    <span className="text-xs text-gray-500">{persona.name} is typing...</span>
-                  </div>
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-lg h-[80vh] bg-white rounded-xl shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b">
+                    <div className="flex items-center gap-3"><Avatar><AvatarImage src={persona.avatar} /><AvatarFallback>{persona.name?.charAt(0)}</AvatarFallback></Avatar><h2 className="font-semibold text-lg">Chat with {persona.name}</h2></div>
+                    <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                 </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-
-        {/* Input */}
-        <div className="p-6 border-t bg-gray-50">
-          <div className="flex space-x-4">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Message ${persona.name}...`}
-              className="flex-1"
-              disabled={isTyping}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isTyping}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+                <ScrollArea className="flex-grow p-4"><div className="space-y-4" ref={scrollAreaRef}>{messages.map((msg, i) => (<div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`rounded-2xl px-4 py-2 max-w-[80%] ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 rounded-bl-none'}`}><p className="text-sm">{msg.content}</p></div></div>))
+                }{isLoading && <div className="flex items-end gap-2"><div className="rounded-2xl px-4 py-2 bg-gray-200"><div className="flex items-center gap-1"><span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span><span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span><span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></span></div></div></div>}</div></ScrollArea>
+                <div className="p-4 border-t bg-gray-50"><div className="relative"><Input placeholder={`Message ${persona.name}...`} value={userInput} onChange={e => setUserInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !isLoading && handleSend()} disabled={isLoading} className="pr-12" /><Button size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleSend} disabled={isLoading}><SendHorizonal className="h-4 w-4" /></Button></div></div>
+            </motion.div>
         </div>
-      </motion.div>
-    </motion.div>
-  )
+    );
 }
