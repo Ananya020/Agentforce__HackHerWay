@@ -14,7 +14,7 @@ A production-ready backend API for PerzonAI - AI Marketing Persona Agent. Built 
 
 ## 🏗️ Architecture
 
-\`\`\`
+```
 src/
 ├── controllers/     # Request handlers
 ├── services/        # Business logic
@@ -23,7 +23,7 @@ src/
 ├── utils/           # Helper functions
 ├── types/           # TypeScript definitions
 └── tests/           # Test files
-\`\`\`
+```
 
 ## 🛠️ Tech Stack
 
@@ -47,27 +47,27 @@ src/
 
 ### 1. Clone and Install
 
-\`\`\`bash
+````
 git clone <repository-url>
 cd perzonai-backend
 npm install
-\`\`\`
+```
 
 ### 2. Environment Setup
 
 Create `.env` file:
 
-\`\`\`env
+```
 PORT=8000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 GEMINI_API_KEY=your_gemini_api_key_here
 LOG_LEVEL=info
-\`\`\`
+```
 
 ### 3. Development
 
-\`\`\`bash
+```
 # Start development server
 npm run dev
 
@@ -79,18 +79,18 @@ npm start
 
 # Run tests
 npm test
-\`\`\`
+```
 
 ### 4. Docker Deployment
 
-\`\`\`bash
+```
 # Build and run with Docker Compose
 docker-compose up --build
 
 # Or build individual container
 docker build -t perzonai-backend .
 docker run -p 8000:8000 --env-file .env perzonai-backend
-\`\`\`
+```
 
 ## 📚 API Documentation
 
@@ -122,6 +122,8 @@ Once running, visit:
 
 ### Environment Variables
 
+```
+
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `PORT` | Server port | `8000` |
@@ -129,6 +131,8 @@ Once running, visit:
 | `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:3000` |
 | `GEMINI_API_KEY` | Google Gemini API key | Required |
 | `LOG_LEVEL` | Logging level | `info` |
+
+```
 
 ### File Upload Limits
 
@@ -138,7 +142,7 @@ Once running, visit:
 
 ## 🧪 Testing
 
-\`\`\`bash
+```
 # Run all tests
 npm test
 
@@ -147,7 +151,7 @@ npm run test:watch
 
 # Run specific test file
 npm test -- persona.test.ts
-\`\`\`
+```
 
 ## 📊 Monitoring & Logging
 
@@ -168,7 +172,7 @@ npm test -- persona.test.ts
 
 ### Using Docker
 
-\`\`\`bash
+```
 # Build production image
 docker build -t perzonai-backend:latest .
 
@@ -179,18 +183,18 @@ docker run -d \
   -e GEMINI_API_KEY=your_key \
   -e NODE_ENV=production \
   perzonai-backend:latest
-\`\`\`
+```
 
 ### Using Docker Compose
 
-\`\`\`bash
+```
 # Production deployment
 docker-compose -f docker-compose.yml up -d
-\`\`\`
+```
 
 ### Manual Deployment
 
-\`\`\`bash
+```
 # Build the application
 npm run build
 
@@ -200,7 +204,7 @@ pm2 start dist/server.js --name perzonai-backend
 
 # Or start directly
 npm start
-\`\`\`
+```
 
 ## 🔄 Frontend Integration
 
@@ -213,7 +217,7 @@ The backend is designed to work seamlessly with the PerzonAI React frontend. Key
 
 ### Frontend API Client Example
 
-\`\`\`typescript
+```
 // Example API calls from frontend
 const response = await fetch('http://localhost:8000/api/personas/generate', {
   method: 'POST',
@@ -225,7 +229,7 @@ const chatResponse = await fetch('http://localhost:8000/api/personas/chat', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ personaId, message }),
 });
-\`\`\`
+```
 
 ## 🤝 Contributing
 
