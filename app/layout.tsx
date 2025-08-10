@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "PerzonAI - AI Marketing Co-Pilot",
   description:
     "Transform your marketing strategy with AI-generated customer personas that think, speak, and engage like real customers",
-    generator: 'v0.dev'
+    
 }
 
 export default function RootLayout({
