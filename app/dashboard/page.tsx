@@ -32,7 +32,7 @@ export default function DashboardPage() {
 const handleRefinePersonas = async (refinements: any) => {
   setIsRefining(true);
   try {
-    const response = await fetch("http://localhost:8000/api/personas/refine", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/personas/refine`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +79,7 @@ const handleRefinePersonas = async (refinements: any) => {
 
   const handleExport = async (format: "json" | "csv") => {
     try {
-      const response = await fetch("http://localhost:8000/api/export/personas", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/export/personas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +118,7 @@ const handleRefinePersonas = async (refinements: any) => {
 
   const handleShare = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/share", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/share`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

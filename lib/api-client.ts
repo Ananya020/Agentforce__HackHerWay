@@ -101,7 +101,7 @@ class ApiClient {
     const formData = new FormData()
     formData.append("file", file)
 
-    return fetch("/api/upload", {
+    return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload`, {
       method: "POST",
       body: formData,
     }).then((res) => res.json())
@@ -113,7 +113,7 @@ class ApiClient {
     format: "json" | "csv" | "pdf"
     includeCharts: boolean
   }) {
-    const response = await fetch("/api/export/personas", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/export/personas`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

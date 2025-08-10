@@ -41,7 +41,7 @@ export default function GeneratorPage() {
     formData.append("file", file)
 
     try {
-      const response = await fetch("http://localhost:8000/api/upload", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload`, {
         method: "POST",
         body: formData,
       })
@@ -93,7 +93,7 @@ export default function GeneratorPage() {
         review_data: uploadedFiles.find((f) => f.fileType === "text/plain")?.processedData?.content || null,
       }
 
-      const response = await fetch("http://localhost:8000/api/personas/generate", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/personas/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
