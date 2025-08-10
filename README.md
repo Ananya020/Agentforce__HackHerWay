@@ -47,7 +47,7 @@ src/
 
 ### 1. Clone and Install
 
-````
+```
 git clone <repository-url>
 cd perzonai-backend
 npm install
